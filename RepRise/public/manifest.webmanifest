@@ -1,0 +1,10 @@
+{
+  "name": "My Workout Tracker",
+  "short_name": "Workout Tracker",
+  "description": "Cloud-synced workout tracker with daily completion and streaks.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#080a0d",
+  "theme_color": "#7c3aed",
+  "icons": []
+}
