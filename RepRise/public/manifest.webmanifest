@@ -1,10 +1,10 @@
 {
-  "name": "My Workout Tracker",
-  "short_name": "Workout Tracker",
-  "description": "Cloud-synced workout tracker with daily completion and streaks.",
+  "name": "RepRise",
+  "short_name": "RepRise",
+  "description": "Train with intention. Track your workouts, recovery and progress.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#080a0d",
-  "theme_color": "#7c3aed",
+  "background_color": "#050a14",
+  "theme_color": "#1685f5",
   "icons": []
 }

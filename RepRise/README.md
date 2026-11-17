@@ -1,58 +1,32 @@
-# My Workout Tracker — online version
+# RepRise
 
-A mobile/tablet/desktop workout tracker based on the supplied 7-day gym plan. It uses Next.js + Supabase and is designed for Vercel deployment.
+RepRise is a Next.js workout tracker with Supabase authentication and cloud-synced workout completion. This update introduces the blue visual theme and the supplied 2026 five-day split.
 
-## Features
+## Run locally
 
-- Auckland/New Zealand date handling.
-- Monday–Sunday workout schedule from the supplied plan.
-- Check off individual exercises.
-- Automatic day completion when every item is checked.
-- Past and future date navigation.
-- Weekly overview.
-- Current streak and best streak.
-- Cloud-saved history, so the same account works across phone, tablet and computer.
-- Installable as a PWA from a supported mobile browser.
+1. Install Node.js (the project uses Next.js 16 and React 19).
+2. Copy `.env.example` to `.env.local`.
+3. Add your Supabase project URL and publishable key to `.env.local`.
+4. Install dependencies with `npm install`.
+5. Start the development server with `npm run dev`.
+6. Open http://localhost:3000.
 
-## 1. Create/configure Supabase
+## Workout programme
 
-Create/open a Supabase project.
+- Monday: Push
+- Tuesday: Pull + 20-minute low-intensity cardio
+- Wednesday: Legs
+- Thursday: Rest / recovery
+- Friday: Upper + 20-minute low-intensity cardio
+- Saturday: Lower
+- Sunday: Rest / recovery
 
-In **SQL Editor**, run `supabase.sql`.
+Existing workout reference images in `public/workout-references/` are reused. Where the new programme names an exercise without an exact existing image, the closest existing reference image is used as a visual guide.
 
-From Supabase project settings, copy:
-- Project URL
-- Publishable key (or anon key if your project labels it that way)
+## Supabase
 
-Put them in `.env.local`:
+The app continues to use the existing `workout_logs` table and stores completed exercise indices by date. No schema migration is required for this update. Existing records are retained.
 
-```env
-NEXT_PUBLIC_SUPABASE_URL=https://YOUR-PROJECT.supabase.co
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=YOUR_KEY
-```
+## Security
 
-For a quick local test, you can disable email confirmation in Supabase Auth settings. For production, keeping email confirmation enabled is recommended.
-
-## 2. Run locally
-
-```bash
-npm install
-npm run dev
-```
-
-Open `http://localhost:3000`.
-
-## 3. Deploy to Vercel
-
-Push this folder to a GitHub repository, then import the repository into Vercel.
-
-Add these Vercel environment variables:
-
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
-
-Deploy.
-
-## 4. Use on phone/tablet
-
-Open the deployed URL on your phone or tablet and sign in with the same account. Your completed workouts are stored in Supabase, not just in the browser. On supported browsers, use **Add to Home Screen** to install it like an app.
+Do not commit `.env.local` or publish Supabase secrets. `.env.local` is intentionally excluded from this handoff ZIP.

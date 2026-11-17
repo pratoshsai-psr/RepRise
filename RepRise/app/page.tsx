@@ -6,209 +6,99 @@ import { supabase } from '../lib/supabase';
 type Exercise = {
   name: string;
   target: string;
+  intensity: string;
+  cue: string;
+  image: string;
 };
 
 type Plan = {
   focus: string;
   items: Exercise[];
   recovery?: boolean;
+  cardio?: string;
+  guidance: string;
 };
 
 type LogMap = Record<string, number[]>;
 
 /* =========================================================
-   WORKOUT PLAN
+   REP RISE — 2026 FIVE-DAY SPLIT
+   Exercise references reuse the images already in /public.
    ========================================================= */
 
 const PLAN: Record<string, Plan> = {
   Monday: {
-    focus: 'Chest + Triceps',
+    focus: 'Push',
+    guidance: 'Warm up first. Use a controlled 3-second lowering phase. Keep your shoulder blades stable on presses and stop if form breaks down.',
     items: [
-      {
-        name: 'Machine Chest Press',
-        target: '3 × 8–12',
-      },
-      {
-        name: 'Incline Machine Chest Press',
-        target: '3 × 8–12',
-      },
-      {
-        name: 'Machine Fly / Pec Deck',
-        target: '3 × 10–15',
-      },
-      {
-        name: 'Dumbbell Chest Fly',
-        target: '2 × 10–15',
-      },
-      {
-        name: 'Cable Triceps Pushdown',
-        target: '3 × 10–15',
-      },
-      {
-        name: 'Dumbbell Overhead Triceps Extension',
-        target: '2 × 10–15',
-      },
+      { name: 'Chest Press', target: '3 × 4–6', intensity: 'RPE 9–10', cue: '3 sec down, pause briefly, then press with control. Keep shoulder blades set.', image: '/workout-references/monday/machine-chest-press.png' },
+      { name: 'Incline Press', target: '3 × 5–8', intensity: 'RPE 9–10', cue: 'Use a modest incline and keep ribs down. Control the stretch at the bottom.', image: '/workout-references/monday/incline-machine-chest-press.png' },
+      { name: 'Shoulder Press', target: '3 × 6–8', intensity: 'RPE 9–10', cue: 'Brace your core and avoid arching your lower back as you press.', image: '/workout-references/thursday/seated-dumbbell-shoulder-press.png' },
+      { name: 'Triceps Extension', target: '3 × 8–12', intensity: 'To failure*', cue: 'Keep elbows steady and lower the weight slowly. Choose a comfortable overhead or cable variation.', image: '/workout-references/monday/dumbbell-overhead-triceps-extension.png' },
     ],
   },
-
   Tuesday: {
-    focus: 'Back + Biceps',
+    focus: 'Pull + Cardio',
+    cardio: '20 minutes low-intensity cardio — treadmill incline walk, elliptical or Stairmaster at a conversational pace.',
+    guidance: 'Focus on moving through a comfortable range and feeling the back muscles work. Avoid swinging or using momentum on curls.',
     items: [
-      {
-        name: 'Lat Pulldown',
-        target: '3 × 8–12',
-      },
-      {
-        name: 'Seated Machine Row',
-        target: '3 × 8–12',
-      },
-      {
-        name: 'Chest-Supported Dumbbell Row',
-        target: '3 × 10–12',
-      },
-      {
-        name: 'Straight-Arm Pulldown',
-        target: '2 × 10–15',
-      },
-      {
-        name: 'Dumbbell Biceps Curl',
-        target: '3 × 10–15',
-      },
-      {
-        name: 'Dumbbell Hammer Curl',
-        target: '2 × 10–15',
-      },
+      { name: 'Lat Pulldown', target: '3 × 6–8', intensity: 'RPE 8–9', cue: 'Allow a full stretch at the top, then pull elbows down towards your hips.', image: '/workout-references/tuesday/lat-pulldown.png' },
+      { name: 'Upper-Back Focused Row', target: '3 × 8–10', intensity: 'RPE 8–9', cue: 'Let elbows travel out slightly. Pause briefly when shoulder blades come together.', image: '/workout-references/thursday/dumbbell-rear-delt-fly.png' },
+      { name: 'Bicep Curl', target: '3 × 8–10', intensity: 'To failure*', cue: 'Keep elbows by your sides. Lower for 3 seconds without swinging.', image: '/workout-references/tuesday/dumbbell-biceps-curl.png' },
+      { name: 'Hammer Curl', target: '3 × 8–10', intensity: 'To failure*', cue: 'Keep a neutral grip and control the full lowering phase.', image: '/workout-references/tuesday/dumbbell-hammer-curl.png' },
     ],
   },
-
   Wednesday: {
-    focus: 'Legs + Calves',
+    focus: 'Legs',
+    guidance: 'Prioritise comfortable depth and controlled technique. For heavy lower-body movements, finish the set if form starts to deteriorate.',
     items: [
-      {
-        name: 'Seated Leg Press',
-        target: '3 × 8–12',
-      },
-      {
-        name: 'Leg Extension',
-        target: '3 × 10–15',
-      },
-      {
-        name: 'Leg Curl',
-        target: '3 × 10–15',
-      },
-      {
-        name: 'Standing Calf Raise',
-        target: '3 × 12–15',
-      },
-      {
-        name: 'Goblet Squat',
-        target: '2 × 10–12',
-      },
+      { name: 'Squat', target: '3 × 4–6', intensity: 'RPE 9–10', cue: 'Brace your trunk and use a pain-free depth. A leg press or goblet squat is a gym alternative.', image: '/workout-references/wednesday/goblet-squat.png' },
+      { name: 'Hip Hinge / Romanian Deadlift', target: '3 × 5–8', intensity: 'RPE 9–10', cue: 'Push hips back, keep the weight close to your legs and feel the hamstring stretch.', image: '/workout-references/wednesday/seated-leg-press.png' },
+      { name: 'Leg Extension', target: '3 × 10–12', intensity: 'To failure*', cue: 'Pause and squeeze at the top, then lower the weight for 3 seconds.', image: '/workout-references/wednesday/leg-extension.png' },
+      { name: 'Hamstring Curl', target: '3 × 10–12', intensity: 'To failure*', cue: 'Use the full comfortable range and avoid letting the weight drop.', image: '/workout-references/wednesday/leg-curl.png' },
+      { name: 'Calf Raise', target: '4 × 12–15', intensity: 'To failure*', cue: 'Use a full stretch at the bottom and avoid bouncing.', image: '/workout-references/wednesday/standing-calf-raise.png' },
     ],
   },
-
   Thursday: {
-    focus: 'Shoulders + Chest',
-    items: [
-      {
-        name: 'Seated Dumbbell Shoulder Press',
-        target: '3 × 8–12',
-      },
-      {
-        name: 'Dumbbell Lateral Raise',
-        target: '3 × 10–15',
-      },
-      {
-        name: 'Dumbbell Rear-Delt Fly',
-        target: '3 × 10–15',
-      },
-      {
-        name: 'Machine Chest Press',
-        target: '3 × 10–12',
-      },
-      {
-        name: 'Machine Fly / Pec Deck',
-        target: '2 × 10–15',
-      },
-      {
-        name: 'Cable Triceps Pushdown',
-        target: '2 × 12–15',
-      },
-    ],
-  },
-
-  Friday: {
-    focus: 'Back + Arms',
-    items: [
-      {
-        name: 'Lat Pulldown',
-        target: '3 × 10–12',
-      },
-      {
-        name: 'Seated Machine Row',
-        target: '3 × 10–12',
-      },
-      {
-        name: 'Chest-Supported Dumbbell Row',
-        target: '2 × 10–12',
-      },
-      {
-        name: 'Dumbbell Biceps Curl',
-        target: '3 × 10–15',
-      },
-      {
-        name: 'Dumbbell Hammer Curl',
-        target: '2 × 10–15',
-      },
-      {
-        name: 'Cable Triceps Pushdown',
-        target: '3 × 10–15',
-      },
-    ],
-  },
-
-  Saturday: {
-    focus: 'Legs + Core + Cardio',
-    items: [
-      {
-        name: 'Seated Leg Press',
-        target: '3 × 10–12',
-      },
-      {
-        name: 'Leg Extension',
-        target: '2 × 10–15',
-      },
-      {
-        name: 'Leg Curl',
-        target: '3 × 10–15',
-      },
-      {
-        name: 'Standing Calf Raise',
-        target: '3 × 12–15',
-      },
-      {
-        name: 'Machine Abdominal Crunch',
-        target: '3 × 10–15',
-      },
-      {
-        name: 'Treadmill Walking',
-        target: '20–30 min',
-      },
-    ],
-  },
-
-  Sunday: {
-    focus: 'Recovery',
+    focus: 'Rest & Recovery',
     recovery: true,
+    guidance: 'Protect your recovery day. Keep activity light and comfortable; no hard training is scheduled.',
     items: [
-      {
-        name: 'Treadmill / easy walk',
-        target: '25–40 min',
-      },
-      {
-        name: 'Gentle mobility',
-        target: '5–10 min',
-      },
+      { name: 'Easy Walk (optional)', target: '20–30 min', intensity: 'Easy pace', cue: 'A relaxed walk is optional. Keep it easy enough to hold a conversation.', image: '/workout-references/saturday/treadmill-walking.png' },
+      { name: 'Gentle Mobility (optional)', target: '5–10 min', intensity: 'Gentle', cue: 'Move comfortably through hips, shoulders and ankles. Do not force stretches.', image: '/workout-references/thursday/day-reference.png' },
+    ],
+  },
+  Friday: {
+    focus: 'Upper + Cardio',
+    cardio: '20 minutes low-intensity cardio — treadmill incline walk, elliptical or Stairmaster at a conversational pace.',
+    guidance: 'Use controlled reps and a comfortable range. Choose a dip alternative such as a machine chest press if dips bother your shoulders.',
+    items: [
+      { name: 'Chest Fly', target: '3 × 10–12', intensity: 'To failure*', cue: 'Keep a soft bend in the elbows and control the stretch. Do not force the bottom position.', image: '/workout-references/monday/machine-fly-pec-deck.png' },
+      { name: 'Lat-Focused Row', target: '3 × 8–10', intensity: 'RPE 8–9', cue: 'Drive elbows back with control and pause briefly at the top.', image: '/workout-references/friday/chest-supported-dumbbell-row.png' },
+      { name: 'Lateral Raise', target: '3 × 12–15', intensity: 'To failure*', cue: 'Lead with elbows and stop around shoulder height. Avoid momentum.', image: '/workout-references/thursday/dumbbell-lateral-raise.png' },
+      { name: 'Dips', target: '3 × 6–8', intensity: 'RPE 9–10', cue: 'Use a controlled range. Substitute a chest press if dips are uncomfortable or not yet suitable.', image: '/workout-references/monday/cable-triceps-pushdown.png' },
+      { name: 'Bicep Curl', target: '3 × 8–10', intensity: 'To failure*', cue: 'Keep elbows close to your sides and lower slowly.', image: '/workout-references/friday/dumbbell-biceps-curl.png' },
+      { name: 'Crunch', target: '2 × 15–20', intensity: 'To failure*', cue: 'Curl ribs towards pelvis with a small controlled movement; avoid turning it into a sit-up.', image: '/workout-references/saturday/machine-abdominal-crunch.png' },
+    ],
+  },
+  Saturday: {
+    focus: 'Lower',
+    guidance: 'Prioritise stable positions and controlled repetitions. Use support for split squats if balance is a challenge.',
+    items: [
+      { name: 'Hip Thrust', target: '3 × 8–10', intensity: 'RPE 9–10', cue: 'Drive through glutes, pause at the top and avoid overextending your lower back.', image: '/workout-references/saturday/seated-leg-press.png' },
+      { name: 'Bulgarian Split Squat', target: '3 × 8–10', intensity: 'RPE 9–10', cue: 'Use a stable support if needed. Keep your front foot planted and torso controlled.', image: '/workout-references/wednesday/goblet-squat.png' },
+      { name: 'Hip Abductor', target: '3 × 12–15', intensity: 'To failure*', cue: 'Control the return and pause briefly when moving knees outward.', image: '/workout-references/saturday/leg-extension.png' },
+      { name: 'Calf Raise', target: '4 × 12–15', intensity: 'To failure*', cue: 'Use a full comfortable range and avoid bouncing.', image: '/workout-references/saturday/standing-calf-raise.png' },
+      { name: 'Leg Raise', target: '2 × 12–15', intensity: 'To failure*', cue: 'Lower legs slowly. Bend knees as needed to keep your lower back comfortable.', image: '/workout-references/saturday/machine-abdominal-crunch.png' },
+    ],
+  },
+  Sunday: {
+    focus: 'Rest & Recovery',
+    recovery: true,
+    guidance: 'A second recovery day is built into the programme. Sleep, eat consistently, hydrate and let your body recover.',
+    items: [
+      { name: 'Easy Walk (optional)', target: '20–30 min', intensity: 'Easy pace', cue: 'Optional relaxed movement only. Keep it comfortable.', image: '/workout-references/saturday/treadmill-walking.png' },
+      { name: 'Gentle Mobility (optional)', target: '5–10 min', intensity: 'Gentle', cue: 'Light mobility if it feels good. Rest fully if you need it.', image: '/workout-references/thursday/day-reference.png' },
     ],
   },
 };
@@ -284,34 +174,6 @@ function sameOrBefore(
   b: string
 ) {
   return a <= b;
-}
-
-/* =========================================================
-   IMAGE HELPERS
-   ========================================================= */
-
-function slugifyExercise(
-  name: string
-) {
-  return name
-    .toLowerCase()
-    .replace(/&/g, 'and')
-    .replace(
-      /[^a-z0-9]+/g,
-      '-'
-    )
-    .replace(
-      /^-|-$/g,
-      '');
-}
-
-function referenceImage(
-  day: string,
-  name: string
-) {
-  return `/workout-references/${day.toLowerCase()}/${slugifyExercise(
-    name
-  )}.png`;
 }
 
 /* =========================================================
@@ -504,19 +366,25 @@ export default function Home() {
   const plan =
     PLAN[selectedName];
 
-  const checked =
-    logs[selectedDate] ?? [];
+  // Recovery days use one explicit completion flag (index 0). Older recovery
+  // records with optional-task indices [0, 1] remain recognised as complete.
+  const checked = plan.recovery
+    ? ((logs[selectedDate] ?? []).length > 0 ? [0] : [])
+    : (logs[selectedDate] ?? []).filter((index) => index >= 0 && index < plan.items.length);
 
-  const progress =
-    Math.round(
-      (checked.length /
-        plan.items.length) *
-        100
-    );
+  // Rest days have a single manual completion flag, even though their
+  // optional recovery suggestions are not trackable exercises.
+  const selectedComplete = plan.recovery
+    ? checked.length > 0
+    : checked.length === plan.items.length;
 
-  const selectedComplete =
-    checked.length ===
-    plan.items.length;
+  const progress = plan.recovery
+    ? (selectedComplete ? 100 : 0)
+    : Math.round(
+        (checked.length /
+          plan.items.length) *
+          100
+      );
 
   /* =====================================================
      COMPLETED DAYS
@@ -533,10 +401,9 @@ export default function Home() {
                 date,
                 today
               ) &&
-              indices.length ===
-                PLAN[
-                  dayName(date)
-                ].items.length
+              (PLAN[dayName(date)].recovery
+                ? indices.length > 0
+                : indices.filter((index) => index >= 0 && index < PLAN[dayName(date)].items.length).length === PLAN[dayName(date)].items.length)
           )
           .map(([date]) => date)
       );
@@ -883,14 +750,13 @@ export default function Home() {
     if (!userEmail)
       return;
 
-    const current = [
-      ...(logs[
-        selectedDate
-      ] ?? []),
-    ];
+    const current = plan.recovery
+      ? ((logs[selectedDate] ?? []).length > 0 ? [0] : [])
+      : [...(logs[selectedDate] ?? []).filter((i) => i >= 0 && i < plan.items.length)];
 
-    const next =
-      value
+    const next = plan.recovery
+      ? (value ? [0] : [])
+      : value
         ? [
             ...new Set([
               ...current,
@@ -960,11 +826,9 @@ export default function Home() {
     if (!userEmail)
       return;
 
-    const allIndices =
-      plan.items.map(
-        (_, index) =>
-          index
-      );
+    const allIndices = plan.recovery
+      ? [0]
+      : plan.items.map((_, index) => index);
 
     setLogs(
       (previous) => ({
@@ -1089,267 +953,7 @@ export default function Home() {
 
     <main className="page">
 
-      <style jsx global>{`
 
-        /* =================================================
-           EXERCISE GRID
-           ================================================= */
-
-        .reprise-exercise-grid {
-          display: grid;
-          grid-template-columns:
-            repeat(3, minmax(0, 1fr));
-          gap: 20px;
-          margin-top: 24px;
-        }
-
-        /* =================================================
-           EXERCISE CARD
-           ================================================= */
-
-        .reprise-exercise-card {
-          position: relative;
-          overflow: hidden;
-
-          border: 1px solid
-            rgba(255, 255, 255, 0.10);
-
-          border-radius: 18px;
-
-          background:
-            rgba(255, 255, 255, 0.035);
-
-          transition:
-            transform 0.2s ease,
-            border-color 0.2s ease,
-            box-shadow 0.2s ease,
-            background 0.2s ease;
-        }
-
-        .reprise-exercise-card:hover {
-          transform:
-            translateY(-3px);
-
-          border-color:
-            rgba(150, 100, 255, 0.55);
-
-          background:
-            rgba(255, 255, 255, 0.055);
-
-          box-shadow:
-            0 15px 35px
-            rgba(0, 0, 0, 0.28);
-        }
-
-        /* =================================================
-           COMPLETED CARD
-           ================================================= */
-
-        .reprise-exercise-card.is-done {
-          border-color:
-            rgba(34, 197, 94, 0.55);
-
-          background:
-            rgba(20, 120, 70, 0.10);
-        }
-
-        /* =================================================
-           IMAGE
-           ================================================= */
-
-        .reprise-image-link {
-          display: block;
-
-          width: 100%;
-          height: 235px;
-
-          overflow: hidden;
-
-          background: #ffffff;
-
-          cursor: zoom-in;
-        }
-
-        .reprise-exercise-image {
-          width: 100%;
-          height: 100%;
-
-          display: block;
-
-          object-fit: cover;
-
-          transition:
-            transform 0.25s ease;
-        }
-
-        .reprise-exercise-card:hover
-        .reprise-exercise-image {
-          transform:
-            scale(1.035);
-        }
-
-        /* =================================================
-           INFO AREA
-           ================================================= */
-
-        .reprise-exercise-info {
-          position: relative;
-
-          display: flex;
-          align-items: center;
-
-          gap: 12px;
-
-          min-height: 82px;
-
-          padding:
-            14px 15px 16px;
-
-          cursor: pointer;
-        }
-
-        /* =================================================
-           HIDE NATIVE CHECKBOX
-           ================================================= */
-
-        .reprise-exercise-info
-        input[type="checkbox"] {
-          position: absolute;
-
-          opacity: 0;
-
-          width: 1px;
-          height: 1px;
-        }
-
-        /* =================================================
-           CHECK BUTTON
-           ================================================= */
-
-        .reprise-check {
-          flex:
-            0 0 30px;
-
-          width: 30px;
-          height: 30px;
-
-          display: flex;
-
-          align-items: center;
-          justify-content: center;
-
-          border-radius: 9px;
-
-          border:
-            1px solid
-            rgba(255, 255, 255, 0.18);
-
-          background:
-            rgba(255, 255, 255, 0.07);
-
-          color: transparent;
-
-          font-size: 15px;
-
-          font-weight: 800;
-
-          transition:
-            background 0.2s ease,
-            border-color 0.2s ease,
-            color 0.2s ease;
-        }
-
-        .reprise-exercise-card.is-done
-        .reprise-check {
-          background: #22c55e;
-
-          border-color: #22c55e;
-
-          color: #ffffff;
-        }
-
-        /* =================================================
-           TEXT
-           ================================================= */
-
-        .reprise-exercise-details {
-          min-width: 0;
-
-          display: flex;
-
-          flex-direction: column;
-
-          gap: 4px;
-        }
-
-        .reprise-exercise-details b {
-          font-size: 15px;
-
-          line-height: 1.3;
-        }
-
-        .reprise-exercise-details small {
-          font-size: 12px;
-
-          opacity: 0.65;
-        }
-
-        /* =================================================
-           TABLET - 2 PER ROW
-           ================================================= */
-
-        @media (max-width: 1050px) {
-
-          .reprise-exercise-grid {
-            grid-template-columns:
-              repeat(2, minmax(0, 1fr));
-          }
-
-          .reprise-image-link {
-            height: 230px;
-          }
-        }
-
-        /* =================================================
-           MOBILE - 1 PER ROW
-           ================================================= */
-
-        @media (max-width: 650px) {
-
-          .reprise-exercise-grid {
-            grid-template-columns: 1fr;
-
-            gap: 16px;
-          }
-
-          .reprise-image-link {
-            height: 270px;
-          }
-        }
-
-        /* =================================================
-           SMALL MOBILE
-           ================================================= */
-
-        @media (max-width: 420px) {
-
-          .reprise-image-link {
-            height: 230px;
-          }
-
-          .reprise-exercise-info {
-            min-height: 72px;
-
-            padding:
-              12px;
-          }
-
-          .reprise-exercise-details b {
-            font-size: 14px;
-          }
-        }
-
-      `}</style>
 
       <div className="wrap">
 
@@ -1362,7 +966,7 @@ export default function Home() {
           <div>
 
             <div className="eyebrow">
-              Consistency over perfection
+              TRAIN WITH INTENTION
             </div>
 
             <h1>
@@ -1370,8 +974,7 @@ export default function Home() {
             </h1>
 
             <p>
-              Your workouts. Your
-              progress. Every day.
+              A smarter view of your training, recovery and progress.
             </p>
 
           </div>
@@ -1544,16 +1147,11 @@ export default function Home() {
 
               <button
                 className="primary small complete-button"
-                onClick={
-                  completeAll
-                }
-                disabled={
-                  selectedComplete
-                }
+                onClick={() => plan.recovery ? setExercise(0, !selectedComplete) : completeAll()}
               >
-                {selectedComplete
-                  ? 'Completed ✓'
-                  : 'Complete all'}
+                {plan.recovery
+                  ? (selectedComplete ? 'Rest day completed ✓' : 'Mark rest day complete')
+                  : (selectedComplete ? 'Completed ✓' : 'Complete all')}
               </button>
 
             </section>
@@ -1587,8 +1185,7 @@ export default function Home() {
                   <div className="progress-box">
 
                     <span>
-                      {checked.length}/
-                      {plan.items.length}
+                      {plan.recovery ? 'REST' : `${checked.length}/${plan.items.length}`}
                     </span>
 
                     <div className="progress">
@@ -1603,12 +1200,16 @@ export default function Home() {
                     </div>
 
                     <small>
-                      {progress}%
-                      complete
+                      {plan.recovery ? 'Take time to recover' : `${progress}% complete`}
                     </small>
 
                   </div>
 
+                </div>
+
+                <div className="session-meta">
+                  <span>{plan.recovery ? 'RECOVERY SESSION' : `${plan.items.length} MOVEMENTS`}</span>
+                  <span>{plan.cardio ? '＋ 20 MIN CARDIO' : plan.recovery ? 'REST DAY' : 'CONTROLLED REPS'}</span>
                 </div>
 
                 {/* =========================================
@@ -1623,6 +1224,33 @@ export default function Home() {
 
                 ) : (
 
+                  plan.recovery ? (
+                    <div className="recovery-panel">
+                      <div className="recovery-intro">
+                        <span className="recovery-symbol" aria-hidden="true">☾</span>
+                        <div>
+                          <h3>A day to recharge.</h3>
+                          <p>No workout or exercise images today. Rest is part of the programme.</p>
+                        </div>
+                      </div>
+                      <div className="recovery-tips">
+                        <div><b>Sleep</b><span>Aim for 7–9 hours and give your body time to recover.</span></div>
+                        <div><b>Nutrition</b><span>Eat consistently and keep up your normal protein intake.</span></div>
+                        <div><b>Hydration</b><span>Drink water regularly throughout the day.</span></div>
+                        <div><b>Optional movement</b><span>Easy walking or gentle mobility only if it feels comfortable.</span></div>
+                      </div>
+                      <button
+                        type="button"
+                        className={`recovery-toggle ${selectedComplete ? 'is-complete' : ''}`}
+                        role="checkbox"
+                        aria-checked={selectedComplete}
+                        onClick={() => setExercise(0, !selectedComplete)}
+                      >
+                        <span className="recovery-checkbox" aria-hidden="true">{selectedComplete ? '✓' : ''}</span>
+                        <span><b>{selectedComplete ? 'Rest day marked complete' : 'Mark rest day as complete'}</b><small>You can switch this on or off at any time.</small></span>
+                      </button>
+                    </div>
+                  ) : (
                   <div className="reprise-exercise-grid">
 
                     {plan.items.map(
@@ -1636,11 +1264,7 @@ export default function Home() {
                             index
                           );
 
-                        const image =
-                          referenceImage(
-                            selectedName,
-                            item.name
-                          );
+                        const image = item.image;
 
                         return (
 
@@ -1659,8 +1283,7 @@ export default function Home() {
                                IMAGE
                                =========================== */}
 
-                            {selectedName !==
-                              'Sunday' && (
+                            {!plan.recovery && (
 
                               <a
                                 className="reprise-image-link"
@@ -1698,28 +1321,19 @@ export default function Home() {
                                EXERCISE INFO
                                =========================== */}
 
-                            <label className="reprise-exercise-info">
+                            <label className={`reprise-exercise-info ${plan.recovery ? 'recovery-info' : ''}`}>
 
-                              <input
-                                type="checkbox"
-                                checked={
-                                  isDone
-                                }
-                                onChange={(
-                                  e
-                                ) =>
-                                  setExercise(
-                                    index,
-                                    e
-                                      .target
-                                      .checked
-                                  )
-                                }
-                              />
-
-                              <span className="reprise-check">
-                                ✓
-                              </span>
+                              {!plan.recovery && (
+                                <>
+                                  <input
+                                    type="checkbox"
+                                    checked={isDone}
+                                    onChange={(e) => setExercise(index, e.target.checked)}
+                                    aria-label={`Mark ${item.name} complete`}
+                                  />
+                                  <span className="reprise-check" aria-hidden="true">✓</span>
+                                </>
+                              )}
 
                               <div className="reprise-exercise-details">
 
@@ -1730,10 +1344,9 @@ export default function Home() {
                                 </b>
 
                                 <small>
-                                  {
-                                    item.target
-                                  }
+                                  {item.target} <span className="exercise-intensity">{item.intensity}</span>
                                 </small>
+                                <p className="exercise-cue">{item.cue}</p>
 
                               </div>
 
@@ -1746,6 +1359,7 @@ export default function Home() {
                     )}
 
                   </div>
+                  )
 
                 )}
 
@@ -1753,18 +1367,10 @@ export default function Home() {
                    SUCCESS MESSAGE
                    ========================================= */}
 
-                {selectedComplete && (
-
+                {selectedComplete && !plan.recovery && (
                   <div className="success">
-
-                    🎉 Workout
-                    complete! Great
-                    work — every
-                    exercise for this
-                    day is done.
-
+                    🎉 Workout complete! Great work — every exercise for this day is done.
                   </div>
-
                 )}
 
                 {/* =========================================
@@ -1775,19 +1381,15 @@ export default function Home() {
 
                   <b>
 
-                    {selectedName ===
-                    'Sunday'
-                      ? 'Recovery rules'
-                      : 'Session rules'}
+                    {plan.recovery ? 'Recovery guidance' : 'Training notes'}
 
                   </b>
 
                   <br />
 
-                  {selectedName ===
-                  'Sunday'
-                    ? 'Treadmill / easy walk 25–40 minutes • gentle mobility 5–10 minutes • no hard weight training.'
-                    : 'Warm up 5–8 min • Rest 90–150 sec • Use controlled reps • No sharp pain • Increase weight only with clean form.'}
+                  {plan.guidance}
+                  {plan.cardio && <><br /><br /><b>Cardio finisher</b><br />{plan.cardio}</>}
+                  {!plan.recovery && <><br /><br /><span className="effort-note">*The source programme prescribes failure on some isolation sets. Treat this as a target only when technique stays controlled; stop for pain or form breakdown. You do not need to force unsafe reps.</span></>}
 
                 </div>
 
